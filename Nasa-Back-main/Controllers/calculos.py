@@ -30,6 +30,15 @@ def infoasteroide(name):
         if name == metodo["name"]:
             return metodo
 
+def velocidad(name):
+    for metodo in datos["neos"]:
+        if name == metodo["name"]:
+            return metodo
+
+def todos(name):
+    for metodo in datos["neos"]:
+        if name == metodo["name"]:
+            return metodo
 
 def lista_mayor_impacto():
     lista = datos["neos"][:]
