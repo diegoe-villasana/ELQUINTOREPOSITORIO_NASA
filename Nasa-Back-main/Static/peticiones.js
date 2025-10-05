@@ -42,6 +42,21 @@ async function infoasteroide_nombre(nombre) {
                 nombreElemento.innerText = data.name; // solo el nombre
             }
 
+            // Después de cargar la info, desencadenar la simulación si el formulario existe.
+            try {
+                const form = document.getElementById('impact-form');
+                if (form) {
+                    // requestSubmit es preferible porque dispara validación y los handlers de submit
+                    if (typeof form.requestSubmit === 'function') {
+                        form.requestSubmit();
+                    } else {
+                        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                    }
+                }
+            } catch (e) {
+                console.warn('No se pudo iniciar la simulación automáticamente:', e);
+            }
+
             return data;
         } else {
             console.error("Retorno no exitoso en infoasteroides, código:", response.status);
