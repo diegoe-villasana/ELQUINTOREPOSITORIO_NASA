@@ -44,6 +44,33 @@ def info_asteroide():#no pasar parametro ya esta en si en la peticion
         return jsonify(info)
     return jsonify({"error": "No encontrado"}), 404
 
+@app.route("/velocidad", methods=["GET"])
+def velocidad():
+    name = request.args.get("velocidad")
+    info = calculos.velocidad(name)
+    if info:
+        return jsonify(info)
+    return jsonify({"error": "No encontrado"}), 404
+
+@app.route("/todos", methods=["GET"])
+def todos():
+    name = request.args.get("name")
+    if not name:
+        return jsonify({"error": "Falta el parámetro 'name'"}), 400
+    info = calculos.todos(name)
+    if info:
+        impact_stats = info.get("impact_stats", {})
+        return jsonify({
+            "nombreElemento": info.get("name", "N/A"),
+            "velocidad": info.get("velocity", "N/A"),
+            "tamano": info.get("diameter_meters", "N/A"),
+            "orbita": info.get("orbit_radius_au", "N/A"),
+            "scale_category": impact_stats.get("scale_category", "N/A"),
+            "energy_megatons": impact_stats.get("energy_megatons", "N/A"),
+            
+        })
+    return jsonify({"error": "No encontrado"}), 404
+
 
 
 @app.route("/lista_mayor_impacto", methods=["GET"])
