@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Impacto - Impacto Estelar</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='peticiones.js') }}"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{{ url_for('index') }}" class="logo">Impacto Estelar</a>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li><a href="{{ url_for('simulacion') }}">Simulación</a></li>
+                <li><a href="{{ url_for('meteoritos') }}" class="active">Análisis de Impacto</a></li>
+                <li><a href="{{ url_for('fuerntes') }}">Fuentes</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="page-content">
+        <section class="container">
+            <h2>Análisis de Impacto de Meteoritos</h2>
+            <p>Utiliza las herramientas a continuación para explorar los datos de impacto de meteoritos proporcionados por las APIs de la NASA.</p>
+
+            <div class="analysis-grid">
+                <!-- Visualización central (mapa / simulador) -->
+                <div id="visualization-area" class="card">
+                    <h3 style="margin-bottom:8px;">Simulador de Impacto</h3>
+                    <div id="map" style="height:100vh; width:100vw; border-radius:0; overflow:hidden; border:0; position:fixed; top:0; left:0; z-index:0;"></div>
+                </div>
+
+                <!-- Panel izquierdo: Información del meteorito (formato glass-panel) -->
+                <aside class="glass-panel dark-panel" id="info-panel">
+                    <div class="panel-header" id="info-panel-header">
+                        <h3>
+                            <!-- info icon -->
+                            <svg class="icon icon-info" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="currentColor" opacity="0.12"></path>
+                                <path d="M11 17h2v-6h-2v6zm0-8h2V7h-2v2z" fill="currentColor"></path>
+                            </svg>
+                            Información del Meteorito
+                        </h3>
+                        <button class="collapse-icon" id="info-collapse" aria-expanded="true" aria-controls="meteorite-info">
+                            <!-- chevron -->
+                            <svg class="icon chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                <path d="M7 10l5 5 5-5H7z" fill="currentColor" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="panel-content" id="meteorite-info">
+                        <div class="info-row"><span class="info-label">Nombre</span><span class="info-value"  id="Resultado_meteoro">N/A</span></div>
+                        <div class="info-row"><span class="info-label"id="Resultado_Masa">Masa</span><span class="info-value" id="feat-mass">N/A</span></div>
+                        <div class="info-row"><span class="info-label"id="Resultado_Composicion">Composición</span><span class="info-value" id="feat-composition">N/A</span></div>
+                        <div class="info-row"><span class="info-label"id="Resultado_Ano caida">Año de Caída</span><span class="info-value" id="feat-year">N/A</span></div>
+
+                        <div class="impact-section">
+                            <div class="info-row"><span class="info-label"id="Resultado_Energia Estimada">Energía estimada</span><span class="impact-energy" id="impact-energy">—</span></div>
+                            <div class="info-row"><span class="info-label"id="Resultado_Escala">Escala de impacto</span><span class="impact-scale" id="impact-scale">—</span></div>
+                            <div class="info-row"><span class="info-label">Comparación</span><span class="impact-comparison" id="impact-comparison">—</span></div>
+                        </div>
+
+                        <!-- Resultado de Gemini -->
+                        <div class="gemini-result" id="gemini-result" style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.04); padding-top:10px;">
+                            <h4 style="margin:0 0 8px 0; font-size:14px;">Análisis (Gemini)</h4>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div id="gemini-loader" style="display:none; width:16px; height:16px; border:2px solid rgba(255,255,255,0.15); border-top-color:#fff; border-radius:50%; animation:spin 1s linear infinite"></div>
+                                <div id="gemini-text" style="font-size:13px; line-height:1.3; color:#e6eef8;">Esperando simulación...</div>
+                            </div>
+                        </div>
+
+                        <style>
+                        @keyframes spin { to { transform: rotate(360deg); } }
+                        </style>
+
+                        <div style="margin-top:12px;">
+                            <button class="filter-btn" id="show-more-details">
+                                <svg class="icon icon-eye" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                    <path d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z" fill="currentColor"/>
+                                    <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" fill="currentColor"/>
+                                </svg>
+                                Ver más detalles
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Panel derecho: Controles (formulario) -->
+                <aside class="glass-panel dark-panel" id="controls-panel">
+                    <div class="panel-header"><h3>
+                        <!-- settings icon -->
+                        <svg class="icon icon-gear" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                            <path d="M19.14 12.936a7.003 7.003 0 0 0 .06-.936 7.003 7.003 0 0 0-.06-.936l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.5 2h-3a.5.5 0 0 0-.5.42l-.36 2.54c-.58.24-1.12.56-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.2 8.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.95s.02.64.06.95L2.32 14.8a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.42.34.66.26l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.05.28.28.48.5.48h3c.22 0 .45-.2.5-.48l.36-2.54c.58-.24 1.12-.56 1.62-.94l2.39.96c.24.08.52-.02.66-.26l1.92-3.32c.14-.24.06-.52-.12-.64l-2.02-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z" fill="currentColor"/>
+                        </svg>
+                        Controles de Simulación
+                    </h3></div>
+                    <div class="panel-content">
+                        <!-- Selector de meteoritos desde la base y meteoritos personalizados -->
+                        <div class="form-group">
+                            <label for="meteorite-select" >Seleccionar meteorito de la base:</label>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <select id="meteorite-select" style="flex:1;" id="Meterorito">
+                                <option value="433 Eros A898 PA">433 Eros A898 PA</option>
+                                <option value="719 Albert A911 TB">719 Albert A911 TB</option>
+                                <option value="887 Alinda A918 AA">887 Alinda A918 AA</option>
+                                <option value="1036 Ganymed A924 UB">036 Ganymed A924 UB</option>
+                                </select>
+                                <button id="load-meteorite" class="filter-btn" type="button">Cargar</button>
+                            </div>
+                            <div style="margin-top:8px; display:flex; gap:8px;">
+                                <button onclick="infoasteroide_nombre(document.getElementById('meteorite-select').value)" 
+        id="use-meteorite" class="filter-btn" type="button">
+    Usar y Simular
+</button>
+
+                            </div>
+                        </div>
+
+                        <!-- Formulario para crear meteoritos personalizados -->
+                        <div style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.04); padding-top:10px;">
+                            <h4 style="margin:0 0 8px 0; font-size:14px;">Crear meteorito personalizado</h4>
+                            <div class="form-group">
+                                <label for="custom-name">Nombre</label>
+                                <input type="text" id="custom-name" placeholder="Ej: MiMeteorito">
+                            </div>
+                            <div class="form-group">
+                                <label for="custom-diameter">Diámetro (m)</label>
+                                <input type="number" id="custom-diameter" value="1000">
+                            </div>
+                            <div class="form-group">
+                                <label for="custom-velocity">Velocidad (km/s)</label>
+                                <input type="number" id="custom-velocity" value="20">
+                            </div>
+                            <div class="form-group">
+                                <label for="custom-density">Densidad (kg/m³)</label>
+                                <input type="number" id="custom-density" value="3000">
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button id="add-custom" class="filter-btn" type="button">Añadir a mis meteoritos</button>
+                                <button id="clear-custom" class="filter-btn" type="button">Limpiar</button>
+                            </div>
+                        </div>
+
+                        <!-- Formulario oculto: conservamos los campos necesarios para que el flujo JS siga funcionando,
+                             pero los controles visibles se han eliminado porque arriba está la versión oficial. -->
+                        <form id="impact-form" style="display:none;" aria-hidden="true">
+                            <input type="hidden" id="impact-lat" name="lat">
+                            <input type="hidden" id="impact-lng" name="lng">
+                            <input type="hidden" id="Meteoros_Api" name="density" value="3000">
+                            <input type="hidden" id="diameter" name="diameter" value="1000">
+                            <input type="hidden" id="velocity" name="velocity" value="20">
+                            <input type="hidden" id="angle" name="angle" value="45">
+                        </form>
+                        <div style="margin-top:8px; display:flex; gap:8px;">
+                            <button type="button" id="sync-map" class="filter-btn">Sincronizar con Mapa</button>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Panel NEO (información expandible, escondido por defecto) -->
+                <div class="glass-panel" id="neo-panel" style="display:none;">
+                    <div class="panel-header"><h3>NEO Detalle</h3></div>
+                    <div class="panel-content" id="neo-content">Cargando...</div>
+                    <script> nombre() </script>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="{{ url_for('static', filename='map.js') }}"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+    <!-- Globe initializer (loads heavy libs on demand) -->
+    <script src="{{ url_for('static', filename='globe.js') }}"></script>
+
+    <!-- Floating toggle button: switch between 2D map and 3D globe -->
+    <button id="toggle-2d3d" aria-label="Alternar mapa 2D / globo 3D (G)" title="Alternar 2D/3D (G)" role="button" aria-pressed="false" style="position:fixed; bottom:18px; right:18px; z-index:3500; width:56px; height:56px; border-radius:28px; border:none; background:linear-gradient(180deg,#0b61a8,#044a78); box-shadow:0 8px 20px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; cursor:pointer;">
+        <!-- Globe SVG (default) -->
+        <svg id="toggle-2d3d-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="#fff" opacity="0.12"/>
+            <path d="M12 4a8 8 0 100 16 8 8 0 000-16zm0 2c2.21 0 4 .9 4 2s-1.79 2-4 2-4-.9-4-2 .9-2 4-2z" fill="#fff"/>
+        </svg>
+    </button>
+
+    <!-- Back to 2D button (visible only when in 3D) -->
+    <button id="back-to-2d" aria-label="Regresar a vista 2D" title="Regresar a 2D" style="position:fixed; top:18px; right:18px; z-index:4500; padding:8px 12px; border-radius:8px; border:none; background:rgba(255,255,255,0.06); color:#fff; cursor:pointer;">Regresar a 2D</button>
+
+    <!-- Globe Modal (opened when toggled to 3D) -->
+    <div id="globe-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:4000; align-items:center; justify-content:center;">
+    <div style="width:90vw; height:80vh; background:#000; border-radius:10px; overflow:hidden; position:relative;">
+            <div style="position:absolute; top:10px; left:10px; z-index:12; display:flex; gap:8px;">
+                <button class="filter-btn" data-globe-theme="color">Color</button>
+                <button class="filter-btn" data-globe-theme="muted">Muted</button>
+                <button class="filter-btn" data-globe-theme="dark">Dark</button>
+            </div>
+            <button id="close-globe" style="position:absolute; top:10px; right:10px; z-index:10;" class="filter-btn">Cerrar</button>
+            <div id="globeViz" style="width:100%; height:100%"></div>
+        </div>
+    </div>
+</body>
+</html>

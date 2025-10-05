@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impacto Estelar - Inicio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="carousel-container">
+        <div class="carousel-slide">
+            <figure>
+                <img src="{{ url_for('static', filename='img/M1.jpg') }}" alt="Imagen de superficie craterizada 1">
+            </figure>
+            <figure>
+                <img src="{{ url_for('static', filename='img/M2.avif') }}" alt="Detalle geológico de un cráter">
+            </figure>
+            <figure>
+                <img src="{{ url_for('static', filename='img/M3.jpg') }}" alt="Anomalía térmica cerca del cráter">
+            </figure>
+            <figure>
+                <img src="{{ url_for('static', filename='img/M4.jpeg') }}" alt="Formación de ejecta alrededor del cráter">
+            </figure>
+            <figure>
+                <img src="{{ url_for('static', filename='img/M5.jpg') }}" alt="Perspectiva aérea de múltiples cráteres">
+            </figure>
+        </div>
+        <div class="overlay"></div>
+    </div>
+
+    <header>
+        <nav>
+            <a href="index.html" class="logo">Impacto Estelar</a>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Inicio</a></li>
+                <li><a href="{{ url_for('simulacion') }}">Simulación</a></li>
+                <li><a href="{{ url_for('meteoritos') }}">Análisis de Impacto</a></li>
+                <li><a href="{{ url_for('fuerntes') }}">Fuentes</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <section class="hero">
+            <h1>Explorando el Impacto Cósmico</h1>
+            <p>Un análisis interactivo sobre meteoritos y sus consecuencias.</p>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
